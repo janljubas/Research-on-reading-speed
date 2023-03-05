@@ -1,0 +1,913 @@
+---
+title: 'Istraživanje: Brzina čitanja učenika četvrtih razreda osnovne škole'
+author: "Gordana Ljubas, Jan Ljubas"
+date: "2023-2-20"
+output:
+  pdf_document:
+    pandoc_args: ["--pdf-engine=xelatex", "--variable=mainfont:Arial", "--variable=monofont:Courier", "--variable=fontsize:12pt", "--variable=papersize:A4", "--variable=encoding:utf-8"]
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = FALSE}
+library(readxl)
+
+# data scrubbing
+# učitavanje podataka + izrada tablice svih ocjena
+
+ocjene_a <- read_excel('ocjene/A_ocjene.xls', col_names = TRUE)
+ocjene_a$Imena <- gsub("^\\d+\\.\\s+", "", ocjene_a$Imena)
+
+ocjene_b <- read_excel('ocjene/B_ocjene.xls', col_names = TRUE)
+ocjene_b$Imena <- gsub("^\\d+\\.\\s+", "", ocjene_b$Imena)  
+
+ocjene_c <- read_excel('ocjene/C_ocjene.xls', col_names = TRUE)
+ocjene_c$Imena <- gsub("^\\d+\\.\\s+", "", ocjene_c$Imena)  
+
+ocjene_d <- read_excel('ocjene/D_ocjene.xls', col_names = TRUE)
+ocjene_d$Imena <- gsub("^\\d+\\.\\s+", "", ocjene_d$Imena) 
+ocjene_d <- ocjene_d[-13, ]
+ocjene_d$`Srednja ocjena`<- as.numeric(ocjene_d$`Srednja ocjena`)
+
+ocjene_a <- read_excel('ocjene/A_ocjene.xls', col_names = TRUE)
+ocjene_a$Imena <- gsub("^\\d+\\.\\s+", "", ocjene_a$Imena)
+
+ocjene_b <- read_excel('ocjene/B_ocjene.xls', col_names = TRUE)
+ocjene_b$Imena <- gsub("^\\d+\\.\\s+", "", ocjene_b$Imena)  
+
+ocjene_c <- read_excel('ocjene/C_ocjene.xls', col_names = TRUE)
+ocjene_c$Imena <- gsub("^\\d+\\.\\s+", "", ocjene_c$Imena)  
+
+ocjene_d <- read_excel('ocjene/D_ocjene.xls', col_names = TRUE)
+ocjene_d$Imena <- gsub("^\\d+\\.\\s+", "", ocjene_d$Imena) 
+ocjene_d <- ocjene_d[-13, ]
+ocjene_d$`Srednja ocjena`<- as.numeric(ocjene_d$`Srednja ocjena`)
+
+sve_ocjene <- data.frame(
+  
+  ID = 1:length(c(
+    ocjene_a$Imena[1:24],
+    ocjene_b$Imena[1:23],
+    ocjene_c$Imena[1:24],
+    ocjene_d$Imena[1:23])
+  ),
+  
+  ime = c(
+    ocjene_a$Imena[1:24],
+    ocjene_b$Imena[1:23],
+    ocjene_c$Imena[1:24],
+    ocjene_d$Imena[1:23]
+  ),
+  
+  spol = c(
+    ocjene_a$Spol[1:24],
+    ocjene_b$Spol[1:23],
+    ocjene_c$Spol[1:24],
+    ocjene_d$Spol[1:23]
+    ),
+  
+  razredi = c(
+    rep("3.A", length(ocjene_a$`Srednja ocjena`[1:24] )), 
+    rep("3.B", length(ocjene_b$`Srednja ocjena`[1:23] )), 
+    rep("3.C", length(ocjene_c$`Srednja ocjena`[1:24] )), 
+    rep("3.D", length(ocjene_d$`Srednja ocjena`[1:23] ))
+    ),
+  
+  `Srednja ocjena` = c(
+    ocjene_a$`Srednja ocjena`[1:24], 
+    ocjene_b$`Srednja ocjena`[1:23], 
+    ocjene_c$`Srednja ocjena`[1:24], 
+    ocjene_d$`Srednja ocjena`[1:23]
+    ),
+  
+  `Hrvatski jezik` = c(
+    ocjene_a$`Hrvatski jezik`[1:24],
+    ocjene_b$`Hrvatski jezik`[1:23],
+    ocjene_c$`Hrvatski jezik`[1:24],
+    ocjene_d$`Hrvatski jezik`[1:23]
+    ),
+  
+  Matematika = c(
+    ocjene_a$Matematika[1:24],
+    ocjene_b$Matematika[1:23],
+    ocjene_c$Matematika[1:24],
+    ocjene_d$Matematika[1:23]
+    ),
+  
+  `Priroda i Društvo` = c(
+    ocjene_a$`Priroda i društvo`[1:24],
+    ocjene_b$`Priroda i društvo`[1:23],
+    ocjene_c$`Priroda i društvo`[1:24],
+    ocjene_d$`Priroda i društvo`[1:23]
+  )
+)
+```
+
+```{r echo=FALSE}
+# average grades per class
+
+prosjek_a = mean(ocjene_a$`Srednja ocjena`[1:24])
+prosjek_b = mean(ocjene_b$`Srednja ocjena`[1:23])
+prosjek_c = mean(ocjene_c$`Srednja ocjena`[1:24])
+prosjek_d = mean(ocjene_d$`Srednja ocjena`[1:23])
+
+
+prosjeci_razreda <- c(prosjek_a, prosjek_b, prosjek_c, prosjek_d)
+svi_prosjeci <- c(ocjene_a$`Srednja ocjena`[1:24], ocjene_b$`Srednja ocjena`[1:23], ocjene_c$`Srednja ocjena`[1:24], ocjene_d$`Srednja ocjena`[1:23] )
+
+sve_ocjene2 <- list()
+for (i in svi_prosjeci){
+  sve_ocjene2 <- append(svi_prosjeci, i, after = 1)
+}
+
+```
+
+```{r echo=FALSE}
+
+#par(mfrow = c(2, 2), las = 2)
+
+## 3. A
+#par(las = 2)
+#plot(ocjene_a$`Srednja ocjena`[1:24],
+     #main = "Prosječne ocjene 3. a razreda",
+     #xlab = "učenik",
+     #ylab = "prosječna ocjena",
+     #col = ifelse( ocjene_a$`Srednja ocjena` < prosjek_a, 'red', 'blue'),
+     #xaxt = 'n'
+    #)
+#axis( 1, at = c(1:24), cex.axis = 0.75, las = 1)
+#abline(h = prosjek_a, col = 'black', lty = 2)  # the dashed line representing avg grade
+
+
+## 3. B
+#par(las = 2)
+#plot(ocjene_b$`Srednja ocjena`[1:23],
+     #main = "Prosječne ocjene 3. b razreda",
+     #xlab = "učenik",
+     #ylab = "prosječna ocjena",
+     #col = ifelse( ocjene_b$`Srednja ocjena` < prosjek_b, 'red', 'blue'),
+     #xaxt = 'n'
+    #)
+#axis( 1, at = c(1:23), cex.axis = 0.75, las = 1)
+#abline(h = prosjek_b, col = 'black', lty = 2)  # the dashed line representing avg grade
+
+
+## 3. C
+#par(las = 2)
+#plot(ocjene_c$`Srednja ocjena`[1:24],
+     #main = "Prosječne ocjene 3. c razreda",
+     #xlab = "učenik",
+     #ylab = "prosječna ocjena",
+     #col = ifelse( ocjene_c$`Srednja ocjena` < prosjek_c, 'red', 'blue'),
+     #xaxt = 'n'
+    #)
+
+#axis( 1, at = c(1:24), cex.axis = 0.75, las = 1)
+#abline(h = prosjek_c, col = 'black', lty = 2)  # the dashed line representing avg grade
+
+
+## 3. D
+#plot(ocjene_d$`Srednja ocjena`[1:23],
+     #main = "Prosječne ocjene 3. d razreda",
+     #xlab = "učenik",
+     #ylab = "prosječna ocjena",
+     #col = ifelse( ocjene_d$`Srednja ocjena` < prosjek_d, 'red', 'blue'),
+     #xaxt = 'n'
+    #)
+#axis( 1, at = c(1:23), cex.axis = 0.75, las = 1)
+#abline(h = prosjek_d, col = 'black', lty = 2)  # the dashed line representing avg grade
+```
+
+## Prikaz distribucije ocjena svih učenika
+
+```{r echo=FALSE}
+########################### SVI RAZREDI ###########################
+options(warn=-1)
+
+#windowsFonts(
+#  A=windowsFont("Arial Unicode MS")
+#)
+
+par(las = 2)
+plot(sve_ocjene2,
+     main = "Prosječne ocjene svih 3. razreda",
+     xlab = "učenik",
+     ylab = "prosječna ocjena",
+     col = ifelse( sve_ocjene2 < mean(sve_ocjene2), 'red', 'blue'),
+     xaxt = 'n'
+    )
+axis( 1, at = c(1:95), cex.axis = 0.75, las = 2)
+axis(side = 4, at = mean(sve_ocjene2), labels = round(mean(sve_ocjene2), 3))
+abline(h = mean(sve_ocjene2), col = 'black', lty = 2, lwd = 2)  # the dashed line representing avg grade
+
+
+hist(sve_ocjene2,
+     col = "red",
+     main = "Stupčasti dijagram svih ocjena",
+     xlab = "učenici grupirani po prosjecima",
+     ylab = "broj učenika u grupi ocjena")
+
+#############################################################################################
+
+library(ggplot2)
+
+
+# Creating a cleaner data frame
+
+data_for_boxplot1 <- data.frame(
+  razredi = c(rep("3.A", length(ocjene_a$`Srednja ocjena`)), 
+              rep("3.B", length(ocjene_b$`Srednja ocjena`)), 
+              rep("3.C", length(ocjene_c$`Srednja ocjena`)), 
+              rep("3.D", length(ocjene_d$`Srednja ocjena`))),
+  srednja_ocjena = c(ocjene_a$`Srednja ocjena`, 
+                  ocjene_b$`Srednja ocjena`, 
+                  ocjene_c$`Srednja ocjena`, 
+                  ocjene_d$`Srednja ocjena`)
+)
+
+# Create a boxplot
+#ggplot(data_for_boxplot1, aes(x = razredi, y = srednja_ocjena)) +
+  #geom_boxplot(color = "black", fill = "red", alpha = 0.8, outlier.shape = NA) +
+  #geom_jitter(color = "black", size = 3, width = 0.2, alpha = 0.8) +
+  #labs(title = "Prosječne ocjene", x = "razredi", y = "ocjena") +
+  #theme_bw() +
+  #theme(axis.text.x = element_text(angle = 0, hjust = 0.5),
+        #panel.grid.major = element_blank(),
+        #panel.grid.minor = element_blank(),
+        #axis.line = element_line(linewidth = 0.5, color = "black")) +
+  #scale_y_continuous(limits = c(3.8, 5.2), expand = c(0, 0), breaks = seq(1, 5.2, by = 0.25), minor_breaks = NULL)
+
+```
+
+
+\newpage
+## Brzina čitanja
+
+```{r echo=FALSE}
+
+citanje_a <- read_excel('citanje/A_citanje.xlsx', col_names = TRUE)
+citanje_a$Ime <- gsub("^\\d+\\.\\s+", "", citanje_a$Ime)
+
+citanje_b <- read_excel('citanje/B_citanje.xlsx', col_names = TRUE)
+citanje_b$Ime <- gsub("^\\d+\\.\\s+", "", citanje_b$Ime)
+
+citanje_c <- read_excel('citanje/C_citanje.xlsx', col_names = TRUE)
+citanje_c$Ime <- gsub("^\\d+\\.\\s+", "", citanje_c$Ime)
+
+citanje_d <- read_excel('citanje/D_citanje.xlsx', col_names = TRUE)
+citanje_d$Ime <- gsub("^\\d+\\.\\s+", "", citanje_d$Ime)
+
+
+## stvaranje data framea za podatke mjerenja brzine citanja
+
+svi_citanje <- data.frame(
+  
+  ID = 1:length(c(
+    citanje_a$Ime[1:23],
+    citanje_b$Ime[1:22],
+    citanje_c$Ime[1:21],
+    citanje_d$Ime[1:23])
+  ),
+  
+  Ime = c(
+    citanje_a$Ime[1:23],
+    citanje_b$Ime[1:22],
+    citanje_c$Ime[1:21],
+    citanje_d$Ime[1:23]
+  ),
+  
+  Prezime = c(
+    citanje_a$Prezime[1:23],
+    citanje_b$Prezime[1:22],
+    citanje_c$Prezime[1:21],
+    citanje_d$Prezime[1:23]
+    ),
+  
+  Razred = c(
+    rep("3.A", 23), 
+    rep("3.B", 22 ), 
+    rep("3.C", 21 ), 
+    rep("3.D", 23 )
+    ),
+  
+  `Broj riječi` = c(
+    citanje_a$`Broj riječi`[1:23],
+    citanje_b$`Broj riječi`[1:22],
+    citanje_c$`Broj riječi`[1:21],
+    citanje_d$`Broj riječi`[1:23]
+  )
+)
+
+
+# average words/minute per class
+
+avg_a = mean(citanje_a$`Broj riječi`[1:23])
+avg_b = mean(citanje_b$`Broj riječi`[1:22])
+avg_c = mean(citanje_c$`Broj riječi`[1:21])
+avg_d = mean(citanje_d$`Broj riječi`[1:23])
+```
+
+
+```{r echo=FALSE}
+# uređivanje svih podataka, spajanje čitanja i pisanja u jedinstvenu tablicu
+
+svi_citanje_filtered <- data.frame( matrix(ncol = ncol(svi_citanje) + 4), nrow = 0 )
+colnames(svi_citanje_filtered) <- c("ID", "Ime", "Prezime", "Spol", "Razred", "Broj riječi", "Srednja ocjena", "Matematika", "Hrvatski jezik", "Priroda i društvo")
+
+
+for (i in 1:89 ) {
+  
+  for (j in 1:94 ) {
+    
+    if ( grepl(svi_citanje[i, ]$Ime, sve_ocjene[j, ]$ime) & grepl(svi_citanje[i, ]$Prezime, sve_ocjene[j, ]$ime) ) {
+      
+      new_row <- data.frame(
+        
+        ID = svi_citanje[i, ]$ID,
+        Ime = svi_citanje[i, ]$Ime,
+        Prezime = svi_citanje[i, ]$Prezime,
+        Spol = sve_ocjene[j, ]$spol,
+        Razred = svi_citanje[i, ]$Razred,
+        `Broj riječi` = svi_citanje[i, ]$Broj.riječi,
+        `Srednja ocjena` = sve_ocjene[j, ]$Srednja.ocjena,
+        Matematika = sve_ocjene[j, ]$Matematika,
+        `Hrvatski jezik` = sve_ocjene[j, ]$Hrvatski.jezik,
+        `Priroda i društvo` = sve_ocjene[j, ]$Priroda.i.Društvo
+      )
+      colnames(new_row) <- colnames(svi_citanje_filtered)
+
+      svi_citanje_filtered <- rbind(svi_citanje_filtered, new_row)
+    }
+  }
+  
+}
+svi_citanje_filtered <- svi_citanje_filtered[-1,]
+
+```
+
+### Brzine čitanja pojedinačnih razreda
+```{r echo=FALSE}
+
+par(mfrow = c(2, 2), las = 2)
+
+############################# A RAZRED #############################
+par(las = 2)
+plot(citanje_a$`Broj riječi`,
+     main = "Brzina čitanja, 4. a",
+     xlab = "učenik",
+     ylab = "broj pročitanih riječi",
+     col = ifelse( citanje_a$`Broj riječi` < avg_a , 'red', 'blue'),
+     xaxt = 'n'
+    )
+axis( 1, at = c(1:23), cex.axis = 0.75, las = 2)
+abline(h = mean(avg_a), col = 'black', lty = 2)  # the dashed line representing avg grade
+
+
+############################# B RAZRED #############################
+
+par(las = 2)
+plot(citanje_b$`Broj riječi`,
+     main = "Brzina čitanja, 4. b",
+     xlab = "učenik",
+     ylab = "broj pročitanih riječi",
+     col = ifelse( citanje_b$`Broj riječi` < avg_b, 'red', 'blue'),
+     xaxt = 'n'
+    )
+axis( 1, at = c(1:23), cex.axis = 0.75, las = 2)
+abline(h = mean(avg_b), col = 'black', lty = 2)  # the dashed line representing avg grade
+
+
+
+############################# C RAZRED #############################
+
+par(las = 2)
+plot(citanje_c$`Broj riječi`,
+     main = "Brzina čitanja, 4. c",
+     xlab = "učenik",
+     ylab = "broj pročitanih riječi",
+     col = ifelse( citanje_c$`Broj riječi` < avg_c, 'red', 'blue'),
+     xaxt = 'n'
+    )
+axis( 1, at = c(1:23), cex.axis = 0.75, las = 2)
+abline(h = mean(avg_c), col = 'black', lty = 2)  # the dashed line representing avg grade
+
+
+
+############################# D RAZRED #############################
+
+par(las = 2)
+plot(citanje_d$`Broj riječi`,
+     main = "Brzina čitanja, 4. d",
+     xlab = "učenik",
+     ylab = "broj pročitanih riječi",
+     col = ifelse( citanje_d$`Broj riječi` < avg_d, 'red', 'blue'),
+     xaxt = 'n'
+    )
+axis( 1, at = c(1:23), cex.axis = 0.75, las = 2)
+abline(h = mean(avg_d), col = 'black', lty = 2)  # the dashed line representing avg grade
+
+
+```
+
+## Brzine čitanja svih razreda
+```{r echo=FALSE}
+
+########################### SVI RAZREDI ###########################
+
+par(las = 2)
+plot(svi_citanje_filtered$`Broj riječi`,
+     main = "Brzina čitanja",
+     xlab = "učenik",
+     ylab = "broj pročitanih riječi",
+     col = ifelse( svi_citanje_filtered$`Broj riječi` < mean(svi_citanje_filtered$`Broj riječi`), 'red', 'blue'),
+     xaxt = 'n'
+    )
+axis( 1, at = c(1:89), las = 1)
+axis(side = 4, at = mean(svi_citanje_filtered$`Broj riječi`), labels = round(mean(svi_citanje_filtered$`Broj riječi`), 0) )
+abline(h = mean(svi_citanje_filtered$`Broj riječi`), col = 'black', lty = 2, lwd = 2)  # the dashed line representing avg grade
+
+
+#############################################################################################################
+
+boxplot(citanje_a$`Broj riječi`, citanje_b$`Broj riječi`, citanje_c$`Broj riječi`, citanje_d$`Broj riječi`,
+        names = c("4. a", "4. b", "4. c", "4. d" ),
+        main = "Dijagram kvantila brzine čitanja",
+        xlab = "razredi",
+        ylab = "broj uspješno pročitanih riječi",
+        yaxt = 'n',
+        las = 1,
+        col = c("red", "green", "blue", "orange")
+        )
+axis( 2, at = c(45:93), las = 2)
+
+points(x = rep(1, 23), y = citanje_a$`Broj riječi`, pch = 19)
+points(x = rep(2, 22), y = citanje_b$`Broj riječi`, pch = 19)
+points(x = rep(3, 21), y = citanje_c$`Broj riječi`, pch = 19)
+points(x = rep(4, 23), y = citanje_d$`Broj riječi`, pch = 19)
+
+legend("bottomright",
+       legend = sapply(list(citanje_a$`Broj riječi`,
+                            citanje_b$`Broj riječi`,
+                            citanje_c$`Broj riječi`,
+                            citanje_d$`Broj riječi`), median),
+       title = "Medijani", fill = c("red", "green", "blue", "orange"),)
+
+
+
+#############################################################################################################
+```
+
+\newpage
+## Usporedba distribucija brzine čitanja i ocjena
+```{r echo=FALSE}
+
+par(mfrow = c(1, 2), las = 2)
+
+hist(svi_citanje_filtered$`Broj riječi`,
+     col = 'red',
+     main = "Stupčasti dijagram brzine čitanja",
+     xlab = "grupe po broju pročitanih riječi",
+     ylab = "broj učenika po grupi",
+     xaxt = 'n'
+     )
+axis( 1, at = c(45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95), las = 1)
+
+hist(sve_ocjene2,
+     col = "red",
+     main = "Stupčasti dijagram svih ocjena",
+     xlab = "učenici grupirani po prosjecima",
+     ylab = "broj učenika u grupi ocjena")
+
+```
+
+## Dijagrami su vizualni indikator da postoji nesklad između distribucije prosjeka ocjena i distribucije brzine čitanja.
+
+```{r echo=FALSE}
+#options(digits = 3)
+#sprintf("Medijani su označeni crnim horizontalnim linijama unutar crvenih regija, redom: %d, %d, %d, %d", median(citanje_a$`Broj riječi`), median(citanje_b$`Broj riječi`), median(citanje_c$`Broj riječi`), median(citanje_d$`Broj riječi`) )
+
+#cat("Prvi i treći kvartili su rubovi obojanih 'kutija'.", "\n", "   U slučaju A razreda: ", format(quantile(citanje_a$`Broj riječi`, probs=0.25), digits=2), ", ", format(quantile(citanje_a$`Broj riječi`, probs=0.75), digits=2), "\n")
+
+#cat("Plave točke označuju postignute rezultate učenika. Najmanje i najveće vrijednosti su najniža i najviša točka u svakom od stupaca.", "\n", "   Primjerice, za A razreda minimalna vrijednost je:", min(citanje_a$`Broj riječi`), ", a maksimalna:", max(citanje_a$`Broj riječi`))
+
+```
+
+
+\newpage
+
+### Zbog određivanja prikladnih vrsta statističkih testiranja, bitno je odrediti formiraju li podatci normalnu distribuciju.
+
+\vspace{2cm}
+#### Slijedi ponovni prikaz box-plotova i prikaza testa za normalnost.
+
+```{r echo=FALSE}
+#Valja provjeriti vrijedi li skup pretpostavki koji činimo prije ANOVA testiranja - približna normalnost uzoraka, donja granica broja traženih igrača po svakom uzorku, jednakost varijanci uzoraka (homoskedastičnost), ...
+
+########################################### TESTIRANJE NORMALNOSTI PODATAKA ########################################### 
+
+library(nortest)
+
+#lillie.test(citanje_a$`Broj riječi`)
+#lillie.test(citanje_b$`Broj riječi`)
+#lillie.test(citanje_c$`Broj riječi`)
+#lillie.test(citanje_d$`Broj riječi`)
+```
+
+
+```{r echo=FALSE}
+# nad sveukupnim podatcima
+lillie.test(svi_citanje$Broj.riječi)
+
+```
+### Zaključak: Zbog malene P-vrijednosti Lillieforseovog testa, podatci vjerojatno nisu normalno distribuirani.
+
+\vspace{1cm}
+
+Za testiranje ovisnosti brzine čitanja o pripadnosti razredu, koristimo analizu varijance.
+```{r echo=FALSE}
+### Budući da se podatci sastoje od samo 4 razreda, nije moguće provesti niti Bartlettov test za homoskedastičnost podataka.
+
+### Valja se okrenuti neparametarskoj inačici analize varijance, točnije Kruskal-Wallisovom 1-faktorskom ANOVA testu:
+
+########################################### KRUSKAL-WALLIS TEST ########################################### 
+
+data_kw <- c(citanje_a$`Broj riječi`, citanje_b$`Broj riječi`, citanje_c$`Broj riječi`, citanje_d$`Broj riječi`)
+groups <- rep( c("3.A", "3.B", "3.C", "3.D"), times = c(23, 22, 21, 23) )
+kw_result <- kruskal.test(data_kw~groups)
+
+
+boxplot(citanje_a$`Broj riječi`, citanje_b$`Broj riječi`, citanje_c$`Broj riječi`, citanje_d$`Broj riječi`,
+        names = c("4.A", "4.B", "4.C", "4.D" ),
+        main = "Boxplot brzine čitanja",
+        xlab = "Razredi",
+        ylab = "Broj uspješno pročitanih riječi",
+        yaxt = 'n',
+        las = 1,
+        col = c("red", "green", "blue", "orange")
+        )
+axis( 2, at = c(45:93), las = 2)
+
+points(x = rep(1, 23), y = citanje_a$`Broj riječi`, pch = 19)
+points(x = rep(2, 22), y = citanje_b$`Broj riječi`, pch = 19)
+points(x = rep(3, 21), y = citanje_c$`Broj riječi`, pch = 19)
+points(x = rep(4, 23), y = citanje_d$`Broj riječi`, pch = 19)
+
+# Add significance level to the plot
+if (kw_result$p.value < 0.15) {
+  text(3, max(data_kw), "*", cex = 3, col = 'red')
+}
+```
+
+### Crvena zvjezdica iznad trećeg stupca označava da on odstupa od ostalih u pogledu ovisnosti brzine čitanja (slabiji rezultat)
+
+\newpage
+Rezultati neparametarskog testa:
+```{r}
+kw_result
+
+```
+
+\vspace{2cm}
+
+### Na razini značajnosti (1- $\alpha$) = 0.88 (drugim riječima, s 88% sigurnosti) odbacuje se hipoteza da NEMA statističke razlike između medijana brzine čitanja svakog razreda!
+
+\vspace{2cm}
+
+## Zaključak: uspjeh učenika u pogledu brzine čitanja u nekoj mjeri ovisi i o razrednoj okolini.
+
+
+
+
+\newpage
+### Sljedeće, želimo odrediti postoji li statistički značajna korelacija između brzine čitanja i prosjeka ocjena. Naslućujemo kauzalnost, a pozitivnim rezultatima definirali bismo i asocijativnost između te dvije vrijednosti. 
+
+```{r echo=FALSE}
+x_a <- ocjene_a$`Srednja ocjena`[1:24]
+y_a <- citanje_a$`Broj riječi`
+cor.test(x_a[-22], y_a, method = "spearman" , exact = FALSE)
+
+
+x_b <- ocjene_b$`Srednja ocjena`[1:23]
+y_b <- citanje_b$`Broj riječi`
+#cor.test(x_b[-c(11)], y_b, method = "spearman", exact = FALSE)
+
+
+x_c <- ocjene_c$`Srednja ocjena`[1:24]
+y_c <- citanje_c$`Broj riječi`
+#cor.test(x_c[-c(7, 11, 13)], y_c, method = "spearman", exact = FALSE)
+
+
+x_d <- ocjene_d$`Srednja ocjena`[1:24]
+y_d <- citanje_d$`Broj riječi`
+#cor.test(x_d[-22], y_d, method = "spearman", exact = FALSE)
+cat("\n \t \t \t * * * \n\n ")
+
+```
+
+
+```{r echo=FALSE}
+x_populacija <- svi_citanje_filtered$`Srednja ocjena`
+y_populacija <- svi_citanje_filtered$`Broj riječi`
+cor.test(x_populacija, y_populacija, method = "spearman", exact = FALSE)
+
+```
+
+\vspace{2cm}
+## Zaključak: Uz blage razlike ovisno o razredu, postoji velika korelacija između brzine čitanja i prosjeka ocjena!
+
+
+
+\newpage
+
+# Promatranje samo MAT, HJ i PiD
+Želimo usporediti korelacije:
+  1. prosjeka svih ocjena s brzinom čitanja
+  2. prosjeka Matematike, Hrvatskog jezika i Prirode i društva s brzinom čitanja
+  
+Ako se pokaže da je 2. korelacija značajno veća, to nas vodi k zaključku da su ova 3 predmeta najznačajniji indikatori brzine čitanja učenika.
+
+```{r echo=FALSE}
+
+suppressPackageStartupMessages(library(dplyr))
+
+
+svi_citanje_filtered <- svi_citanje_filtered %>%
+  mutate(across(Matematika:`Priroda i društvo`, as.numeric)) %>%
+  mutate("Prosjek 3 predmeta" = rowMeans(select(., Matematika :`Priroda i društvo`)))
+
+
+```
+
+\vspace{1cm}
+Opravdano je micati oko 5% stršećih vrijednosti ako želimo 95% vjerne i pouzdane statističke zaključke. To ne krši tzv. pravilo 2$\sigma$ dozvoljenog odstupanja, često primjenjivano u statističkoj analizi u društvenim znanostima.
+Bitno je naglasiti da nam priroda mjerenja i promjenjivost rezultata ovih podataka također daje za pravo poduzimati takve mjere.
+
+```{r echo=FALSE}
+
+#removing the outliers
+
+svi_citanje_filtered_v2 <- subset(svi_citanje_filtered, !(Prezime %in% c("Rajačić", "Vodanović", "Dežman")) )
+svi_citanje_filtered_v2 <- subset(svi_citanje_filtered_v2, !(Prezime %in% c("Pustišek")) )
+svi_citanje_filtered_v2 <- subset(svi_citanje_filtered_v2, !(Prezime %in% c("Njavro")) )
+svi_citanje_filtered_v2 <- subset(svi_citanje_filtered_v2, !(Prezime %in% c("Matijaš", "Bjelić", "Rašić")) )
+
+```
+
+```{r echo=FALSE}
+x_a <- subset(svi_citanje_filtered_v2, Razred %in% ("3.A") )$`Prosjek 3 predmeta`
+y_a <- subset(svi_citanje_filtered_v2, Razred %in% ("3.A") )$`Broj riječi`
+#cor.test(x_a, y_a, method = "pearson")
+
+
+x_b <- subset(svi_citanje_filtered_v2, Razred %in% ("3.B") )$`Prosjek 3 predmeta`
+y_b <- subset(svi_citanje_filtered_v2, Razred %in% ("3.B") )$`Broj riječi`
+#cor.test(x_b, y_b, method = "pearson")
+
+
+x_c <- subset(svi_citanje_filtered_v2, Razred %in% ("3.C") )$`Prosjek 3 predmeta`
+y_c <- subset(svi_citanje_filtered_v2, Razred %in% ("3.C") )$`Broj riječi`
+#cor.test(x_c, y_c, method = "pearson")
+
+
+
+x_d <- subset(svi_citanje_filtered_v2, Razred %in% ("3.D") )$`Prosjek 3 predmeta`
+y_d <- subset(svi_citanje_filtered_v2, Razred %in% ("3.D") )$`Broj riječi`
+#cor.test(x_d, y_d, method = "pearson")
+
+
+# plot(x_d, y_d, pch = 16, col = "blue", xlab = "Prosjek 3 predmeta", ylab = "Broj riječi", main = "Scatter plot", xlim = c(3, 5), ylim = c(45, 85) )
+
+```
+
+\vspace{1cm}
+
+#### Ako zanemarimo blagu ovisnost ocjena o razredu, korelacija prosjeka ocjena 3 glavna predmeta i brzine čitanja je:
+```{r echo=FALSE}
+x_svi_1 <- svi_citanje_filtered_v2$`Prosjek 3 predmeta`
+y_svi_1 <- svi_citanje_filtered_v2$`Broj riječi`
+
+cor.test(x_svi_1, y_svi_1, method = "pearson", exact = FALSE)
+```
+
+\vspace{1cm}
+#### Korelacija prosjeka ocjena svih ocjena i broja riječi je:
+```{r echo=FALSE}
+x_svi_2 <- svi_citanje_filtered_v2$`Srednja ocjena`
+y_svi_2 <- svi_citanje_filtered_v2$`Broj riječi`
+
+cor.test(x_svi_2, y_svi_2, method = "pearson", exact = FALSE)
+
+```
+
+\newpage
+### Ako zbog rezultata analize varijance želimo računati korelaciju samo za razredno-neovisne učenike, rezultat je sljedeći:
+
+```{r echo=FALSE}
+x <- subset(svi_citanje_filtered_v2, Razred %in% c("3.A", "3.B", "3.C") )$`Prosjek 3 predmeta`
+y <- subset(svi_citanje_filtered_v2, Razred %in% c("3.A", "3.B", "3.C") )$`Broj riječi`
+
+cor.test(x, y, method = "pearson", exact = FALSE)
+
+```
+
+
+\vspace{3cm}
+
+### Nakon što smo izbacili stršeće vrijednosti, korelacije prema Pearsonovom koeficijentu vrlo su slične u svim navedenim slučajevima, oko r = 0,5. Takva vrijednost jasan je pokazatelj da za učenika koji brže čita u pravilu možemo očekivati i viši prosjek ocjena.
+
+
+
+### Usporedba korelacija:
+```{r echo=FALSE}
+# Create a scatter plot
+
+par(mfrow = c(1, 2))
+
+plot1 <- plot(x_svi_1, y_svi_1, pch = 16, col = "blue", xlab = "Prosjek 3 predmeta", ylab = "Broj riječi", main = "Brzina čitanja", xlim = c(3, 5), ylim = c(48, 88) )
+
+plot2 <- plot(x_svi_2, y_svi_2, pch = 16, col = "blue", xlab = "Ukupni prosjek", ylab = "Broj riječi", main = "Brzina čitanja", xlim = c(4, 5), ylim = c(48, 86) )
+
+# Print both plots side-by-side
+#library(gridExtra)
+#grid.arrange(plot1, plot2, ncol = 2)
+
+```
+
+\newpage
+# Linearna regresija
+Pokušat ćemo međuovisnost čitanja i prosjeka ocjena modelirati linearnom regresijom.
+Prije toga trebamo provjeriti uvjete za linearnu regresiju, poput normalnosti reziduala.
+Slijede dijagram reziduala i QQ-plot:
+
+\vspace{1cm}
+
+```{r echo=FALSE}
+library(ggplot2)
+
+data_1 <- data.frame(x = x_svi_1, y = y_svi_1)
+model1 <- lm(x~y, data = data_1)
+
+data_2 <- data.frame(x = x_svi_2, y = y_svi_2)
+model2 <- lm(x~y, data = data_2)
+```
+
+```{r echo=FALSE}
+#------------------------------------------------------------------------------------- residual plot
+ggplot(data = data_1, aes(x = predict(model1), y = resid(model1))) +
+  geom_point() +
+  labs(title = "Dijagram reziduala", x = "Modelom predviđene vrijednosti", y = "Reziduali")
+
+
+qqnorm(resid(model2), main = "QQ-plot", xlab = "Normalna razdioba kvantila", ylab = "Razdioba kvantila podataka" )
+qqline(resid(model2))
+#shapiro.test(resid(model2))
+
+#library(car)
+
+#shapiro.test(resid(model1))
+#shapiro.test(resid(model2))
+
+
+#res1 <- resid(model1)
+#res2 <- resid(model2)
+
+#plot(fitted(model1), res1)
+#abline(0,0)
+#plot(fitted(model2), res2)
+#abline(0,0)
+
+#qqnorm(resid(model1))
+#qqline(resid(model1))
+#qqnorm(resid(model2))
+#qqline(resid(model2))
+
+#plot(density(res1))
+#plot(density(res2))
+
+```
+Budući da se reziduali ne povećavaju porastom vrijednosti, kao niti da QQ-plot ne odstupa drastično od pravca, zaključujemo da smijemo izrađivati linearni model nad podatcima.
+
+
+```{r echo=FALSE}
+#------------------------------------------------------------------------------------- verzija sve ocjene + 2 legende
+
+ggplot(data_2, aes(x = x, y = y)) +
+  
+  geom_point() +
+  
+  geom_smooth( aes( color = "pravac: \npozitivna korelacija\nocjena i čitanja" ),
+               method = "lm",
+               formula = "y ~ x",
+               se = FALSE,
+               show.legend = TRUE
+              ) +
+  
+  labs(title = "Korelacija glavnih ocjena i brzine čitanja", x = "prosjek svih ocjena", y = "brzina čitanja") +
+  
+  theme( legend.position = c(.25, .85),
+         legend.justification = c("right", "top"),
+         legend.box.just = "right",
+         legend.margin = margin(6, 6, 6, 6),
+         legend.background = element_rect(fill = "transparent")
+        ) +
+  
+  annotate( "text",
+            x = 5,
+            y = 55,
+            label = paste0("y = ", round(model2$coefficients[2],2), "*x + ",round(model2$coefficients[1],2)),
+            color = "black",
+            hjust = 5,
+            vjust = -1,
+            size = 3.5
+           ) +
+  scale_color_manual(name = "Legenda",
+                     values = c("pravac: \npozitivna korelacija\nocjena i čitanja" = "red")
+                     )
+
+
+```
+
+\newpage
+# Razlika među dječacima i djevojčicama
+
+Želimo testirati postoji li značajna razlika u ocjenama i u brzini čitanja između dječaka i djevojčica.
+
+
+\vspace{2cm}
+
+Test vezan za ocjene:
+```{r echo=FALSE}
+# testiranje ima li razlike u ocjenama među spolovima i ima li razlike u brzini čitanja među spolovima
+####################################################################################### ocjene - spol
+
+m_ocjene <- svi_citanje_filtered[svi_citanje_filtered$Spol == 'm', ]
+f_ocjene <- svi_citanje_filtered[svi_citanje_filtered$Spol == 'f', ]
+
+
+#mean(m_ocjene$Prosjek_3_predmeta)
+#mean(f_ocjene$Prosjek_3_predmeta)
+
+test_result <- wilcox.test(m_ocjene$`Srednja ocjena`, f_ocjene$`Srednja ocjena`, alternative = "greater")
+
+test_result
+
+
+# Create boxplots for each group
+boxplot(main = "Odnos ocjena dječaka i djevojčica",
+        m_ocjene$`Srednja ocjena`, 
+        f_ocjene$`Srednja ocjena`,
+        names = c("dječaci", "djevojčice"),
+        boxfill = c("orange", "green")
+        )
+
+legend("bottomright",
+       legend = sapply(list(m_ocjene$`Srednja ocjena`, f_ocjene$`Srednja ocjena`), median),
+       title = "Medijani", fill = c("orange", "green"))
+
+# Add significance asterisk to the plot
+if(test_result$p.value < 0.05){
+  text(1.5, max(c(m_ocjene$Prosjek_3_predmeta, f_ocjene$Prosjek_3_predmeta)), "*", cex = 2)
+}
+```
+
+## Jako blaga razlika u prosjeku ocjena našem uzorku postoji, ali nedovoljno velika da se može zaključiti išta na ukupnoj populaciji učenika!
+
+\newpage
+
+\vspace{2cm}
+Test vezan za brzinu čitanja:
+```{r echo=FALSE}
+
+m_citanje <- svi_citanje_filtered[svi_citanje_filtered$Spol == 'm', ]
+f_citanje <- svi_citanje_filtered[svi_citanje_filtered$Spol == 'f', ]
+
+test_result_2 <- wilcox.test(m_citanje$`Broj riječi`, f_citanje$`Broj riječi`)
+
+test_result_2
+
+
+# Create boxplots for each group
+boxplot(main = "Odnos brzine čitanja dječaka i djevojčica",
+        m_citanje$`Broj riječi`,
+        f_citanje$`Broj riječi`,
+        names = c("dječaci", "djevojčice"),
+        boxfill = c("orange", "green")
+        )
+
+legend("bottomright",
+      legend = sapply(list(m_ocjene$`Broj riječi`, f_ocjene$`Broj riječi`), median),
+       title = "Medijani", fill = c("orange", "green"))
+
+# Add significance asterisk to the plot
+if(test_result_2$p.value < 0.05){
+  text(1.5, max(c(m_citanje$`Broj riječi`, f_citanje$`Broj riječi`)), "*", cex = 2)
+}
+
+```
+
+## Zaključak: Statistički nema gotovo nikakve razlike u brzini čitanja dječaka i djevojčica!
